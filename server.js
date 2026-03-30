@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const Customer = require("./models/Customer");
+const customerRoutes = require("./routes/customers");
 
 const app = express();
 
@@ -40,6 +41,8 @@ app.get("/customers", async (req, res) => {
     res.status(500).send("Error retrieving customers");
   }
 });
+
+app.use("/customers", customerRoutes);
 
 const PORT = process.env.PORT || 3000;
 
