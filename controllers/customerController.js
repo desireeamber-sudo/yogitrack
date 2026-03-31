@@ -7,6 +7,7 @@ exports.getAllCustomers = async (req, res) => {
     const limit = parseInt(req.query.limit) || 5;
     const skip = (page - 1) * limit;
     const total = await Customer.countDocuments();
+    const totalPages = Math.ceil(total / limit);
     const customers = await Customer.find()
     .skip(skip)
     .limit(limit);
@@ -16,9 +17,10 @@ exports.getAllCustomers = async (req, res) => {
     page,
     limit,
     total,
+    totalPages,
     data: customers
   });
-  
+
   } catch (error) {
     console.error(error);
     res.status(500).send("Error retrieving customers");
