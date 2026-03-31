@@ -34,7 +34,9 @@ exports.addTestCustomer = async (req, res) => {
 exports.deleteCustomer = async (req, res) => {
   try {
     await Customer.findByIdAndDelete(req.params.id);
-    res.send("Customer deleted");
+    res.json({
+  message: "Customer deleted successfully"
+    });
   } catch (error) {
     console.error(error);
     res.status(500).send("Error deleting customer");
@@ -53,7 +55,10 @@ exports.updateCustomer = async (req, res) => {
       { returnDocument: "after" }
     );
 
-    res.json(updatedCustomer);
+    res.json({
+      message: "Customer updated successfully",
+      data: updatedCustomer
+    });
   } catch (error) {
     console.error(error);
     res.status(500).send("Error updating customer");
