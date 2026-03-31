@@ -6,9 +6,21 @@ exports.getAllCustomers = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 5;
     const skip = (page - 1) * limit;
-    const total = await Customer.countDocuments();
+    
+    const search = req.query.search || "";
+    
+    const query = {
+      $or: [
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } }
+      ]
+    };
+    
+    const total = await Customer.countDocuments(query);
     const totalPages = Math.ceil(total / limit);
-    const customers = await Customer.find()
+
+    const customers = await Customer.find(query)
     .skip(skip)
     .limit(limit);
     
