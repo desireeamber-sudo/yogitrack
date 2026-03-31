@@ -12,25 +12,9 @@ mongoose.connect(process.env.MONGO_URI)
 .catch(err => console.error(err));
 
 app.get("/", (req, res) => {
-    res.send("YogiTrack server is running");
-});
-
-app.get("/add-test-customer", async (req, res) => {
-  try {
-    const customer = new Customer({
-      firstName: "Test",
-      lastName: "User",
-      email: "test@example.com",
-      phone: "555-1234"
-    });
-
-    await customer.save();
-
-    res.send("Test customer added");
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error adding customer");
-  }
+  res.json({
+    message: "API is running"
+  });
 });
 
 app.use("/customers", customerRoutes);

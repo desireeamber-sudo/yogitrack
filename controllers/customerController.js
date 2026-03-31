@@ -3,11 +3,22 @@ const Customer = require("../models/Customer");
 // GET all customers
 exports.getAllCustomers = async (req, res) => {
   try {
-    const customers = await Customer.find();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+    const total = await Customer.countDocuments();
+    const customers = await Customer.find()
+    .skip(skip)
+    .limit(limit);
+    
     res.json({
-      message: "Customers retrieved successfully",
-      data: customers
-    });
+    message: "Customers retrieved successfully",
+    page,
+    limit,
+    total,
+    data: customers
+  });
+  
   } catch (error) {
     console.error(error);
     res.status(500).send("Error retrieving customers");
