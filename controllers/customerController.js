@@ -4,7 +4,10 @@ const Customer = require("../models/Customer");
 exports.getAllCustomers = async (req, res) => {
   try {
     const customers = await Customer.find();
-    res.json(customers);
+    res.json({
+      message: "Customers retrieved successfully",
+      data: customers
+    });
   } catch (error) {
     console.error(error);
     res.status(500).send("Error retrieving customers");

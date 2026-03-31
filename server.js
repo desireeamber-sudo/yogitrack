@@ -33,16 +33,6 @@ app.get("/add-test-customer", async (req, res) => {
   }
 });
 
-app.get("/customers", async (req, res) => {
-  try {
-    const customers = await Customer.find();
-    res.json(customers);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error retrieving customers");
-  }
-});
-
 app.use("/customers", customerRoutes);
 
 const PORT = process.env.PORT || 3000;
