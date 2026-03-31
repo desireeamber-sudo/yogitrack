@@ -15,4 +15,6 @@ router.get("/delete/:id", customerController.deleteCustomer);
 // UPDATE customer
 router.get("/update/:id", customerController.updateCustomer);
 
+router.post("/", customerController.createCustomer);
+
 module.exports = router;

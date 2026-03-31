@@ -1,0 +1,9 @@
+POST http://localhost:3000/customers
+Content-Type: application/json
+
+{
+  "firstName": "Structured",
+  "lastName": "Response",
+  "email": "structured@test.com",
+  "phone": "555-4444"
+}
