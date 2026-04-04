@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Customer</title>
+</head>
+<body>
+
+<h2>Edit Customer</h2>
+
+<form id="editForm">
+
+    <label>First Name:</label><br>
+    <input type="text" id="firstName" required><br><br>
+
+    <label>Last Name:</label><br>
+    <input type="text" id="lastName" required><br><br>
+
+    <label>Email:</label><br>
+    <input type="email" id="email" required><br><br>
+
+    <label>Phone:</label><br>
+    <input
+        type="text"
+        id="phone"
+        pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+        placeholder="123-456-7890"
+        required
+    ><br><br>
+
+    <button type="submit">Update Customer</button>
+
+</form>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+async function loadCustomer() {
+    const response = await fetch(`http://localhost:3000/customers/${id}`);
+    const result = await response.json();
+    const customer = result.data;
+
+    document.getElementById("firstName").value = customer.firstName;
+    document.getElementById("lastName").value = customer.lastName;
+    document.getElementById("email").value = customer.email;
+    document.getElementById("phone").value = customer.phone;
+}
+
+document.getElementById("editForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const updatedCustomer = {
+        firstName: document.getElementById("firstName").value,
+        lastName: document.getElementById("lastName").value,
+        email: document.getElementById("email").value,
+        phone: document.getElementById("phone").value
+    };
+
+    await fetch(`http://localhost:3000/customers/${id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(updatedCustomer)
+    });
+
+    alert("Customer updated");
+    window.location.href = "customers.html";
+});
+
+loadCustomer();
+</script>
+
+</body>
+</html>

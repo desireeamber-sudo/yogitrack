@@ -78,10 +78,7 @@ exports.updateCustomer = async (req, res) => {
   try {
     const updatedCustomer = await Customer.findByIdAndUpdate(
       req.params.id,
-      {
-        firstName: "Updated",
-        lastName: "Customer"
-      },
+      req.body,
       { returnDocument: "after" }
     );
 
@@ -119,4 +116,20 @@ exports.createCustomer = async (req, res) => {
       message: "Error creating customer"
     });
   }
+};
+
+exports.getCustomerById = async (req, res) => {
+    try {
+        const customer = await Customer.findById(req.params.id);
+
+        res.json({
+            message: "Customer retrieved successfully",
+            data: customer
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: "Error retrieving customer"
+        });
+    }
 };

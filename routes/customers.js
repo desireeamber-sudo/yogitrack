@@ -6,15 +6,16 @@ const customerController = require("../controllers/customerController");
 // GET all customers
 router.get("/", customerController.getAllCustomers);
 
-// ADD test customer
-router.get("/add-test", customerController.addTestCustomer);
+// GET one customer by id
+router.get("/:id", customerController.getCustomerById);
 
-// DELETE customer
-router.get("/delete/:id", customerController.deleteCustomer);
+// CREATE customer
+router.post("/", customerController.createCustomer);
 
 // UPDATE customer
-router.get("/update/:id", customerController.updateCustomer);
+router.put("/:id", customerController.updateCustomer);
 
-router.post("/", customerController.createCustomer);
+// DELETE customer
+router.delete("/:id", customerController.deleteCustomer);
 
 module.exports = router;
