@@ -8,6 +8,7 @@ exports.getAllCustomers = async (req, res) => {
     const skip = (page - 1) * limit;
     
     const search = req.query.search || "";
+    const sort = req.query.sort || "firstName";
     
     const query = {
       $or: [
@@ -21,6 +22,7 @@ exports.getAllCustomers = async (req, res) => {
     const totalPages = Math.ceil(total / limit);
 
     const customers = await Customer.find(query)
+    .sort(sort)
     .skip(skip)
     .limit(limit);
     

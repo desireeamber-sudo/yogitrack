@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer List</title>
+</head>
+<body>
+
+<h2>Customer List</h2>
+
+<table border="1" id="customerTable">
+    <thead>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<script>
+
+async function loadCustomers() {
+
+    const response = await fetch("http://localhost:3000/customers");
+
+    const result = await response.json();
+
+    const customers = result.data;
+
+    const tableBody = document.querySelector("#customerTable tbody");
+
+    tableBody.innerHTML = "";
+
+    customers.forEach(customer => {
+
+        const row = `
+            <tr>
+                <td>${customer.firstName}</td>
+                <td>${customer.lastName}</td>
+                <td>${customer.email}</td>
+                <td>${customer.phone}</td>
+            </tr>
+        `;
+
+        tableBody.innerHTML += row;
+
+    });
+
+}
+
+loadCustomers();
+
+</script>
+
+</body>
+</html>
