@@ -40,7 +40,7 @@ const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
 async function loadCustomer() {
-    const response = await fetch(`http://localhost:3000/customers/${id}`);
+    fetch(`/customers/${id}`, {
     const result = await response.json();
     const customer = result.data;
 
@@ -60,7 +60,7 @@ document.getElementById("editForm").addEventListener("submit", async function(ev
         phone: document.getElementById("phone").value
     };
 
-    await fetch(`http://localhost:3000/customers/${id}`, {
+    fetch(`/customers/${id}`)
         method: "PUT",
         headers: {
             "Content-Type": "application/json"

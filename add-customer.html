@@ -47,7 +47,7 @@ document.getElementById("customerForm").addEventListener("submit", async functio
         phone: document.getElementById("phone").value
     };
 
-    const response = await fetch("http://localhost:3000/customers", {
+    const response = await fetch("/customers", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
