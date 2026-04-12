@@ -95,15 +95,32 @@ exports.updateCustomer = async (req, res) => {
 // CREATE customer from request body
 exports.createCustomer = async (req, res) => {
   try {
-    const { firstName, lastName, email, phone } = req.body;
+    const { firstName, lastName, address, email, phone, preferredContact } = req.body;
 
-    if (!firstName || !lastName || !email || !phone) {
+    if (!firstName || !lastName || !address || !email || !phone || !preferredContact) {
       return res.status(400).json({
         message: "All fields are required"
       });
     }
 
-    const customer = new Customer(req.body);
+    const existingCustomer = await Customer.findOne({ firstName, lastName });
+
+    const allowDuplicate = req.headers["x-allow-duplicate"];
+
+    if (existingCustomer && !allowDuplicate) {
+      return res.status(400).json({
+        message: "A customer with that name already exists. Please confirm before adding a duplicate."
+      });
+    }
+    const customerCount = await Customer.countDocuments();
+    const newCustomerId = "C" + String(customerCount + 1).padStart(5, "0");
+
+    const customer = new Customer({
+      ...req.body,
+      customerId: newCustomerId,
+      classBalance: 0
+    });
+
     await customer.save();
 
     res.status(201).json({

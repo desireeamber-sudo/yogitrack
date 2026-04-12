@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
-const customerSchema = new mongoose.Schema({
-  customerId: {
+const instructorSchema = new mongoose.Schema({
+  instructorId: {
     type: String
   },
   firstName: {
@@ -28,11 +28,7 @@ const customerSchema = new mongoose.Schema({
     type: String,
     required: true,
     enum: ["phone", "email"]
-  },
-  classBalance: {
-    type: Number,
-    default: 0
   }
 });
 
-module.exports = mongoose.model("Customer", customerSchema);
+module.exports = mongoose.model("Instructor", instructorSchema);

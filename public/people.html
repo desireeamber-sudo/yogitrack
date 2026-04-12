@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>People List</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="container">
+
+<a href="index.html">Home</a>
+<br><br>
+
+<h2>People List</h2>
+
+<table border="1" id="peopleTable">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Address</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Preferred Contact</th>
+            <th>Class Balance</th>
+            <th>Edit</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<script>
+async function loadPeople() {
+    const customerResponse = await fetch("/customers");
+    const customerResult = await customerResponse.json();
+    const customers = customerResult.data || [];
+
+    const instructorResponse = await fetch("/instructors");
+    const instructorResult = await instructorResponse.json();
+    const instructors = instructorResult.data || [];
+
+    const people = [
+        ...customers.map(customer => ({
+            id: customer.customerId || "N/A",
+            recordId: customer._id,
+            type: "Customer",
+            firstName: customer.firstName || "",
+            lastName: customer.lastName || "",
+            address: customer.address || "N/A",
+            email: customer.email || "",
+            phone: customer.phone || "",
+            preferredContact: customer.preferredContact || "N/A",
+            classBalance: customer.classBalance ?? 0
+        })),
+        ...instructors.map(instructor => ({
+            id: instructor.instructorId || "N/A",
+            recordId: instructor._id,
+            type: "Instructor",
+            firstName: instructor.firstName || "",
+            lastName: instructor.lastName || "",
+            address: instructor.address || "N/A",
+            email: instructor.email || "",
+            phone: instructor.phone || "",
+            preferredContact: instructor.preferredContact || "N/A",
+            classBalance: "-"
+        }))
+    ];
+
+    const tableBody = document.querySelector("#peopleTable tbody");
+
+    // ✅ Build the full HTML first, then set it once
+    let rows = "";
+
+    people.forEach(person => {
+        rows += `
+            <tr>
+                <td>${person.id}</td>
+                <td>${person.type}</td>
+                <td>${person.firstName}</td>
+                <td>${person.lastName}</td>
+                <td>${person.address}</td>
+                <td>${person.email}</td>
+                <td>${person.phone}</td>
+                <td>${person.preferredContact}</td>
+                <td>${person.classBalance}</td>
+                <td>
+                    <button onclick="editPerson('${person.type}', '${person.recordId}')">Edit</button>
+                </td>
+                <td>
+                    <button onclick="deletePerson('${person.type}', '${person.recordId}')">Delete</button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tableBody.innerHTML = rows; // ✅ Set once, handlers intact
+}
+
+loadPeople();
+
+function editPerson(type, id) {
+    if (type === "Customer") {
+        window.location.href = `edit-customer.html?id=${id}`;
+    } else {
+        window.location.href = `edit-instructor.html?id=${id}`;
+    }
+}
+
+async function deletePerson(type, id) {
+    const confirmDelete = confirm(`Are you sure you want to delete this ${type.toLowerCase()}?`);
+    if (!confirmDelete) return;
+
+    const route = type === "Customer" ? "/customers" : "/instructors";
+
+    await fetch(`${route}/${id}`, { method: "DELETE" });
+
+    loadPeople();
+}
+</script>
+
+</div>
+
+</body>
+</html>

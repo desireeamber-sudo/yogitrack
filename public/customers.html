@@ -2,9 +2,10 @@
 <html>
 <head>
     <title>Customer List</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
+<div class="container">
 <h2>Customer List</h2>
 
 <a href="index.html">Home</a>
@@ -15,10 +16,14 @@
 <table border="1" id="customerTable">
     <thead>
         <tr>
+            <th>Customer ID</th>
             <th>First Name</th>
             <th>Last Name</th>
+            <th>Address</th>
             <th>Email</th>
             <th>Phone</th>
+            <th>Preferred Contact</th>
+            <th>Class Balance</th>
             <th>Edit</th>
             <th>Delete</th>
         </tr>
@@ -34,29 +39,31 @@ async function loadCustomers() {
     const customers = result.data;
 
     const tableBody = document.querySelector("#customerTable tbody");
-    tableBody.innerHTML = "";
+
+    let rows = "";
 
     customers.forEach(customer => {
-        const row = `
+        rows += `
             <tr>
-                <td>${customer.firstName}</td>
-                <td>${customer.lastName}</td>
-                <td>${customer.email}</td>
-                <td>${customer.phone}</td>
+                <td>${customer.customerId || "N/A"}</td>
+                <td>${customer.firstName || ""}</td>
+                <td>${customer.lastName || ""}</td>
+                <td>${customer.address || "N/A"}</td>
+                <td>${customer.email || ""}</td>
+                <td>${customer.phone || ""}</td>
+                <td>${customer.preferredContact || "N/A"}</td>
+                <td>${customer.classBalance ?? 0}</td>
                 <td>
-                    <button onclick="editCustomer('${customer._id}')">
-                        Edit
-                    </button>
-                    </td>
+                    <button onclick="editCustomer('${customer._id}')">Edit</button>
+                </td>
                 <td>
-                    <button onclick="deleteCustomer('${customer._id}')">
-                        Delete</button>
+                    <button onclick="deleteCustomer('${customer._id}')">Delete</button>
                 </td>
             </tr>
         `;
-
-        tableBody.innerHTML += row;
     });
+
+    tableBody.innerHTML = rows;
 }
 
 async function deleteCustomer(id) {
@@ -64,8 +71,9 @@ async function deleteCustomer(id) {
     if (!confirmDelete) return;
 
     await fetch(`/customers/${id}`, {
-    method: "DELETE"
-});
+        method: "DELETE"
+    });
+
     loadCustomers();
 }
 
@@ -75,6 +83,8 @@ function editCustomer(id) {
 
 loadCustomers();
 </script>
+
+</div>
 
 </body>
 </html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Customer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+    <a href="index.html">Home</a>
+    <br><br>
+    <a href="customers.html">Back to Customer List</a>
+    <br><br>
+
+<h2>Add Customer</h2>
+
+<form id="customerForm">
+
+    <label>First Name:</label><br>
+    <input type="text" id="firstName" required><br><br>
+
+    <label>Last Name:</label><br>
+    <input type="text" id="lastName" required><br><br>
+
+    <button type="button" id="checkNameBtn">Check Customer Name</button>
+
+    <div id="extraFields" style="display: none; margin-top: 20px;">
+
+        <label>Address:</label><br>
+        <input type="text" id="address" required><br><br>
+
+        <label>Phone:</label><br>
+        <input
+            type="text"
+            id="phone"
+            pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+            placeholder="123-456-7890"
+            required
+        ><br><br>
+
+        <label>Email:</label><br>
+        <input type="email" id="email" required><br><br>
+
+        <label>Preferred Mode of Communication:</label><br>
+        <select id="preferredContact" required>
+            <option value="">Select one</option>
+            <option value="phone">Phone</option>
+            <option value="email">Email</option>
+        </select><br><br>
+
+        <button type="submit">Add Customer</button>
+
+    </div>
+
+</form>
+
+<script>
+
+let allowDuplicate = false;
+
+document.getElementById("checkNameBtn").addEventListener("click", async function() {
+    const firstName = document.getElementById("firstName").value;
+    const lastName = document.getElementById("lastName").value;
+
+    if (!firstName || !lastName) {
+        alert("Please enter first and last name first.");
+        return;
+    }
+
+    const response = await fetch("/customers");
+    const result = await response.json();
+    const customers = result.data;
+
+    const duplicate = customers.find(
+        c => c.firstName === firstName && c.lastName === lastName
+    );
+
+    if (duplicate) {
+        const proceed = confirm(
+            "A customer with that name already exists. Do you want to continue?"
+        );
+
+        if (!proceed) {
+            return;
+        }
+
+        allowDuplicate = true;
+    } else {
+        allowDuplicate = false;
+    }
+
+    document.getElementById("extraFields").style.display = "block";
+});
+
+document.getElementById("customerForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const customer = {
+        firstName: document.getElementById("firstName").value,
+        lastName: document.getElementById("lastName").value,
+        address: document.getElementById("address").value,
+        phone: document.getElementById("phone").value,
+        email: document.getElementById("email").value,
+        preferredContact: document.getElementById("preferredContact").value
+    };
+
+    const response = await fetch("/customers", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-Allow-Duplicate": allowDuplicate ? "true" : "false"
+        },
+        body: JSON.stringify(customer)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        alert(result.message);
+        return;
+    }
+
+    alert(`Welcome to Yoga'Hom! Your customer id is ${result.data.customerId}.`);
+    window.location.href = "customers.html";
+});
+
+</script>
+
+</div>
+
+</body>
+</html>
