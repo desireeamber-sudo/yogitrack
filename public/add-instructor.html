@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- add instructor form -->
 <html>
 <head>
     <title>Add Instructor</title>
@@ -12,6 +13,7 @@
         <a href="people.html">Back to People List</a>
     </div>
 
+    <!-- name fields show first - rest of form hidden until name check passes -->
     <form id="instructorForm">
         <label>First Name:</label><br>
         <input type="text" id="firstName" required><br><br>
@@ -46,6 +48,7 @@
 <script>
 let allowDuplicate = false;
 
+// check for duplicate name before showing rest of form
 document.getElementById("checkNameBtn").addEventListener("click", async function() {
     const firstName = document.getElementById("firstName").value;
     const lastName = document.getElementById("lastName").value;
@@ -63,6 +66,7 @@ document.getElementById("checkNameBtn").addEventListener("click", async function
     document.getElementById("extraFields").style.display = "block";
 });
 
+// submit new instructor
 document.getElementById("instructorForm").addEventListener("submit", async function(event) {
     event.preventDefault();
     const instructor = {

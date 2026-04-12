@@ -30,6 +30,7 @@
 </div>
 
 <script>
+// load and render instructor list and builds the table rows
 async function loadInstructors() {
     const response = await fetch("/instructors");
     const result = await response.json();
@@ -55,12 +56,14 @@ async function loadInstructors() {
     document.querySelector("#instructorTable tbody").innerHTML = rows;
 }
 
+// confirm and delete by MongoDB ID, then reloads table
 async function deleteInstructor(id) {
     if (!confirm("Are you sure you want to delete this instructor?")) return;
     await fetch(`/instructors/${id}`, { method: "DELETE" });
     loadInstructors();
 }
 
+// go to edit form with instructor ID in query string
 function editInstructor(id) {
     window.location.href = `edit-instructor.html?id=${id}`;
 }

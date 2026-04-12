@@ -1,84 +1,41 @@
+// customer controller - handles all customer crud operations
+
 const Customer = require("../models/Customer");
 
-// GET all customers
+// get all customers
 exports.getAllCustomers = async (req, res) => {
   try {
     const customers = await Customer.find().sort("firstName");
-
-    res.json({
-      message: "Customers retrieved successfully",
-      data: customers
-    });
+    res.json({ message: "Customers retrieved successfully", data: customers });
   } catch (error) {
     console.error(error);
     res.status(500).send("Error retrieving customers");
   }
 };
 
-// ADD test customer
-exports.addTestCustomer = async (req, res) => {
+// get one customer by id
+exports.getCustomerById = async (req, res) => {
   try {
-    const customer = new Customer({
-      firstName: "Controller",
-      lastName: "Test",
-      email: "controller@test.com",
-      phone: "555-9999"
-    });
-
-    await customer.save();
-
-    res.send("Customer added from controller");
+    const customer = await Customer.findById(req.params.id);
+    res.json({ message: "Customer retrieved successfully", data: customer });
   } catch (error) {
     console.error(error);
-    res.status(500).send("Error adding customer");
+    res.status(500).json({ message: "Error retrieving customer" });
   }
 };
 
-// DELETE customer
-exports.deleteCustomer = async (req, res) => {
-  try {
-    await Customer.findByIdAndDelete(req.params.id);
-    res.json({
-  message: "Customer deleted successfully"
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error deleting customer");
-  }
-};
-
-// UPDATE customer
-exports.updateCustomer = async (req, res) => {
-  try {
-    const updatedCustomer = await Customer.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { returnDocument: "after" }
-    );
-
-    res.json({
-      message: "Customer updated successfully",
-      data: updatedCustomer
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error updating customer");
-  }
-};
-
-// CREATE customer from request body
+// create new customer
 exports.createCustomer = async (req, res) => {
   try {
     const { firstName, lastName, address, email, phone, preferredContact } = req.body;
 
+    // make sure all fields are present
     if (!firstName || !lastName || !address || !email || !phone || !preferredContact) {
-      return res.status(400).json({
-        message: "All fields are required"
-      });
+      return res.status(400).json({ message: "All fields are required" });
     }
 
+    // check for duplicate name
     const existingCustomer = await Customer.findOne({ firstName, lastName });
-
     const allowDuplicate = req.headers["x-allow-duplicate"] === "true";
 
     if (existingCustomer && !allowDuplicate) {
@@ -86,11 +43,10 @@ exports.createCustomer = async (req, res) => {
         message: "A customer with that name already exists. Please confirm before adding a duplicate."
       });
     }
-    const lastCustomer = await Customer.findOne({ customerId: /^C/ })
-      .sort({ customerId: -1 });
-    const lastNum = lastCustomer
-      ? parseInt(lastCustomer.customerId.replace("C", "")) 
-      : 0;
+
+    // generate next customer id based on highest existing - avoids collisions after deletes
+    const lastCustomer = await Customer.findOne({ customerId: /^C/ }).sort({ customerId: -1 });
+    const lastNum = lastCustomer ? parseInt(lastCustomer.customerId.replace("C", "")) : 0;
     const newCustomerId = "C" + String(lastNum + 1).padStart(5, "0");
 
     const customer = new Customer({
@@ -100,31 +56,33 @@ exports.createCustomer = async (req, res) => {
     });
 
     await customer.save();
-
-    res.status(201).json({
-      message: "Customer created successfully",
-      data: customer
-    });
+    res.status(201).json({ message: "Customer created successfully", data: customer });
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      message: "Error creating customer"
-    });
+    res.status(500).json({ message: "Error creating customer" });
   }
 };
 
-exports.getCustomerById = async (req, res) => {
-    try {
-        const customer = await Customer.findById(req.params.id);
+// update customer
+exports.updateCustomer = async (req, res) => {
+  try {
+    const updatedCustomer = await Customer.findByIdAndUpdate(
+      req.params.id, req.body, { returnDocument: "after" }
+    );
+    res.json({ message: "Customer updated successfully", data: updatedCustomer });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error updating customer");
+  }
+};
 
-        res.json({
-            message: "Customer retrieved successfully",
-            data: customer
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            message: "Error retrieving customer"
-        });
-    }
+// delete customer
+exports.deleteCustomer = async (req, res) => {
+  try {
+    await Customer.findByIdAndDelete(req.params.id);
+    res.json({ message: "Customer deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error deleting customer");
+  }
 };

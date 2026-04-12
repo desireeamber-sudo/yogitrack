@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- edit instructor form - loads existing data from url id param -->
 <html>
 <head>
     <title>Edit Instructor</title>
@@ -15,34 +16,30 @@
     <form id="editForm">
         <label>First Name:</label><br>
         <input type="text" id="firstName" required><br><br>
-
         <label>Last Name:</label><br>
         <input type="text" id="lastName" required><br><br>
-
         <label>Address:</label><br>
         <input type="text" id="address" required><br><br>
-
         <label>Email:</label><br>
         <input type="email" id="email" required><br><br>
-
         <label>Phone:</label><br>
         <input type="text" id="phone" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder="123-456-7890" required><br><br>
-
         <label>Preferred Mode of Communication:</label><br>
         <select id="preferredContact" required>
             <option value="">Select one</option>
             <option value="phone">Phone</option>
             <option value="email">Email</option>
         </select><br><br>
-
         <button type="submit">Update Instructor</button>
     </form>
 </div>
 
 <script>
+// get id from url
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
+// load existing instructor into form
 async function loadInstructor() {
     const result = await fetch(`/instructors/${id}`).then(r => r.json());
     const i = result.data;
@@ -54,6 +51,7 @@ async function loadInstructor() {
     document.getElementById("preferredContact").value = i.preferredContact;
 }
 
+// save changes
 document.getElementById("editForm").addEventListener("submit", async function(event) {
     event.preventDefault();
     await fetch(`/instructors/${id}`, {

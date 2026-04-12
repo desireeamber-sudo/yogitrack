@@ -31,6 +31,7 @@
 </div>
 
 <script>
+// load and render customer list all customers and builds the table rows
 async function loadCustomers() {
     const response = await fetch("/customers");
     const result = await response.json();
@@ -57,12 +58,14 @@ async function loadCustomers() {
     document.querySelector("#customerTable tbody").innerHTML = rows;
 }
 
+// confirm and delete by MongoDB ID, then reloads table
 async function deleteCustomer(id) {
     if (!confirm("Are you sure you want to delete this customer?")) return;
     await fetch(`/customers/${id}`, { method: "DELETE" });
     loadCustomers();
 }
 
+// go to edit form with customer ID in query string
 function editCustomer(id) {
     window.location.href = `edit-customer.html?id=${id}`;
 }

@@ -1,55 +1,41 @@
+// instructor controller - handles all instructor crud operations
+
 const Instructor = require("../models/Instructor");
 
-// GET all instructors
+// get all instructors
 exports.getAllInstructors = async (req, res) => {
   try {
     const instructors = await Instructor.find();
-
-    res.json({
-      message: "Instructors retrieved successfully",
-      data: instructors
-    });
+    res.json({ message: "Instructors retrieved successfully", data: instructors });
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      message: "Error retrieving instructors"
-    });
+    res.status(500).json({ message: "Error retrieving instructors" });
   }
 };
 
-// GET one instructor by id
+// get one instructor by id
 exports.getInstructorById = async (req, res) => {
   try {
     const instructor = await Instructor.findById(req.params.id);
-
-    res.json({
-      message: "Instructor retrieved successfully",
-      data: instructor
-    });
+    res.json({ message: "Instructor retrieved successfully", data: instructor });
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      message: "Error retrieving instructor"
-    });
+    res.status(500).json({ message: "Error retrieving instructor" });
   }
 };
 
-// CREATE instructor
+// create new instructor
 exports.createInstructor = async (req, res) => {
   try {
     const { firstName, lastName, address, email, phone, preferredContact } = req.body;
 
+    // make sure all fields are present
     if (!firstName || !lastName || !address || !email || !phone || !preferredContact) {
-      return res.status(400).json({
-        message: "All fields are required"
-      });
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-    const existingInstructor = await Instructor.findOne({
-      firstName,
-      lastName
-    });
-
+    // check for duplicate name
+    const existingInstructor = await Instructor.findOne({ firstName, lastName });
     const allowDuplicate = req.headers["x-allow-duplicate"] === "true";
 
     if (existingInstructor && !allowDuplicate) {
@@ -58,65 +44,40 @@ exports.createInstructor = async (req, res) => {
       });
     }
 
-    const lastInstructor = await Instructor.findOne({ instructorId: /^I/ })
-      .sort({ instructorId: -1 });
-    const lastNum = lastInstructor
-      ? parseInt(lastInstructor.instructorId.replace("I", ""))
-      : 0;
+    // generate next instructor id based on highest existing - avoids collisions after deletes
+    const lastInstructor = await Instructor.findOne({ instructorId: /^I/ }).sort({ instructorId: -1 });
+    const lastNum = lastInstructor ? parseInt(lastInstructor.instructorId.replace("I", "")) : 0;
     const newInstructorId = "I" + String(lastNum + 1).padStart(5, "0");
 
-    const instructor = new Instructor({
-      ...req.body,
-      instructorId: newInstructorId
-    });
-
+    const instructor = new Instructor({ ...req.body, instructorId: newInstructorId });
     await instructor.save();
-
-    res.status(201).json({
-      message: "Instructor created successfully",
-      data: instructor
-    });
+    res.status(201).json({ message: "Instructor created successfully", data: instructor });
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      message: "Error creating instructor"
-    });
+    res.status(500).json({ message: "Error creating instructor" });
   }
 };
 
-// UPDATE instructor
+// update instructor
 exports.updateInstructor = async (req, res) => {
   try {
     const updatedInstructor = await Instructor.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { returnDocument: "after" }
+      req.params.id, req.body, { returnDocument: "after" }
     );
-
-    res.json({
-      message: "Instructor updated successfully",
-      data: updatedInstructor
-    });
+    res.json({ message: "Instructor updated successfully", data: updatedInstructor });
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      message: "Error updating instructor"
-    });
+    res.status(500).json({ message: "Error updating instructor" });
   }
 };
 
-// DELETE instructor
+// delete instructor
 exports.deleteInstructor = async (req, res) => {
   try {
     await Instructor.findByIdAndDelete(req.params.id);
-
-    res.json({
-      message: "Instructor deleted successfully"
-    });
+    res.json({ message: "Instructor deleted successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      message: "Error deleting instructor"
-    });
+    res.status(500).json({ message: "Error deleting instructor" });
   }
 };

@@ -43,8 +43,13 @@
 </div>
 
 <script>
+// allPeople holds the full combined dataset for client-side filtering
+
 let allPeople = [];
 
+// Fetches customers and instructors from API, merges into one array,
+// sorts by ID, and renders the table
+// fetch customers and instructors, merge, sort by id, render
 async function loadPeople() {
     const customerResponse = await fetch("/customers");
     const customerResult = await customerResponse.json();
@@ -75,6 +80,9 @@ async function loadPeople() {
     renderTable(allPeople);
 }
 
+// Builds and injects table rows from the provided people array.
+// Uses color-coded tags to distinguish Customers from Instructors.
+// build table rows from filtered list
 function renderTable(people) {
     let rows = "";
     people.forEach(person => {
@@ -101,6 +109,9 @@ function renderTable(people) {
     document.querySelector("#peopleTable tbody").innerHTML = rows;
 }
 
+// Reads all active filter inputs and re-renders the table
+// with only the matching rows. All filters combine with AND logic.
+// filter table based on all active inputs
 function applyFilters() {
     const id      = document.getElementById("filterId").value.toLowerCase();
     const type    = document.getElementById("filterType").value;
@@ -135,12 +146,16 @@ document.getElementById("filterContact").addEventListener("change", applyFilters
 
 loadPeople();
 
+// Navigates to the appropriate edit form based on person type
+// go to edit form
 function editPerson(type, id) {
     window.location.href = type === "Customer"
         ? `edit-customer.html?id=${id}`
         : `edit-instructor.html?id=${id}`;
 }
 
+// Confirms deletion, calls the correct DELETE endpoint, then reloads
+// confirm and delete
 async function deletePerson(type, id) {
     if (!confirm(`Are you sure you want to delete this ${type.toLowerCase()}?`)) return;
     const route = type === "Customer" ? "/customers" : "/instructors";
