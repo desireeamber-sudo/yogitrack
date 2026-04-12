@@ -3,38 +3,12 @@ const Customer = require("../models/Customer");
 // GET all customers
 exports.getAllCustomers = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 5;
-    const skip = (page - 1) * limit;
-    
-    const search = req.query.search || "";
-    const sort = req.query.sort || "firstName";
-    
-    const query = {
-      $or: [
-        { firstName: { $regex: search, $options: "i" } },
-        { lastName: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } }
-      ]
-    };
-    
-    const total = await Customer.countDocuments(query);
-    const totalPages = Math.ceil(total / limit);
+    const customers = await Customer.find().sort("firstName");
 
-    const customers = await Customer.find(query)
-    .sort(sort)
-    .skip(skip)
-    .limit(limit);
-    
     res.json({
-    message: "Customers retrieved successfully",
-    page,
-    limit,
-    total,
-    totalPages,
-    data: customers
-  });
-
+      message: "Customers retrieved successfully",
+      data: customers
+    });
   } catch (error) {
     console.error(error);
     res.status(500).send("Error retrieving customers");
@@ -105,15 +79,19 @@ exports.createCustomer = async (req, res) => {
 
     const existingCustomer = await Customer.findOne({ firstName, lastName });
 
-    const allowDuplicate = req.headers["x-allow-duplicate"];
+    const allowDuplicate = req.headers["x-allow-duplicate"] === "true";
 
     if (existingCustomer && !allowDuplicate) {
       return res.status(400).json({
         message: "A customer with that name already exists. Please confirm before adding a duplicate."
       });
     }
-    const customerCount = await Customer.countDocuments();
-    const newCustomerId = "C" + String(customerCount + 1).padStart(5, "0");
+    const lastCustomer = await Customer.findOne({ customerId: /^C/ })
+      .sort({ customerId: -1 });
+    const lastNum = lastCustomer
+      ? parseInt(lastCustomer.customerId.replace("C", "")) 
+      : 0;
+    const newCustomerId = "C" + String(lastNum + 1).padStart(5, "0");
 
     const customer = new Customer({
       ...req.body,

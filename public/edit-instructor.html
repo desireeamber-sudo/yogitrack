@@ -5,95 +5,74 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
 <div class="container">
+    <h2>Edit Instructor</h2>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="people.html">Back to People List</a>
+    </div>
 
-<a href="index.html">Home</a>
-<br><br>
-<a href="people.html">Back to People List</a>
-<br><br>
+    <form id="editForm">
+        <label>First Name:</label><br>
+        <input type="text" id="firstName" required><br><br>
 
-<h2>Edit Instructor</h2>
+        <label>Last Name:</label><br>
+        <input type="text" id="lastName" required><br><br>
 
-<form id="editForm">
+        <label>Address:</label><br>
+        <input type="text" id="address" required><br><br>
 
-    <label>First Name:</label><br>
-    <input type="text" id="firstName" required><br><br>
+        <label>Email:</label><br>
+        <input type="email" id="email" required><br><br>
 
-    <label>Last Name:</label><br>
-    <input type="text" id="lastName" required><br><br>
+        <label>Phone:</label><br>
+        <input type="text" id="phone" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder="123-456-7890" required><br><br>
 
-    <label>Address:</label><br>
-    <input type="text" id="address" required><br><br>
+        <label>Preferred Mode of Communication:</label><br>
+        <select id="preferredContact" required>
+            <option value="">Select one</option>
+            <option value="phone">Phone</option>
+            <option value="email">Email</option>
+        </select><br><br>
 
-    <label>Email:</label><br>
-    <input type="email" id="email" required><br><br>
-
-    <label>Phone:</label><br>
-    <input
-        type="text"
-        id="phone"
-        pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
-        placeholder="123-456-7890"
-        required
-    ><br><br>
-
-    <label>Preferred Mode of Communication:</label><br>
-    <select id="preferredContact" required>
-        <option value="">Select one</option>
-        <option value="phone">Phone</option>
-        <option value="email">Email</option>
-    </select><br><br>
-
-    <button type="submit">Update Instructor</button>
-
-</form>
+        <button type="submit">Update Instructor</button>
+    </form>
+</div>
 
 <script>
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
 async function loadInstructor() {
-    const response = await fetch(`/instructors/${id}`);
-    const result = await response.json();
-    const instructor = result.data;
-
-    document.getElementById("firstName").value = instructor.firstName;
-    document.getElementById("lastName").value = instructor.lastName;
-    document.getElementById("address").value = instructor.address;
-    document.getElementById("email").value = instructor.email;
-    document.getElementById("phone").value = instructor.phone;
-    document.getElementById("preferredContact").value = instructor.preferredContact;
+    const result = await fetch(`/instructors/${id}`).then(r => r.json());
+    const i = result.data;
+    document.getElementById("firstName").value = i.firstName;
+    document.getElementById("lastName").value = i.lastName;
+    document.getElementById("address").value = i.address;
+    document.getElementById("email").value = i.email;
+    document.getElementById("phone").value = i.phone;
+    document.getElementById("preferredContact").value = i.preferredContact;
 }
 
 document.getElementById("editForm").addEventListener("submit", async function(event) {
     event.preventDefault();
-
-    const updatedInstructor = {
-        firstName: document.getElementById("firstName").value,
-        lastName: document.getElementById("lastName").value,
-        address: document.getElementById("address").value,
-        email: document.getElementById("email").value,
-        phone: document.getElementById("phone").value,
-        preferredContact: document.getElementById("preferredContact").value
-    };
-
     await fetch(`/instructors/${id}`, {
         method: "PUT",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(updatedInstructor)
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            firstName: document.getElementById("firstName").value,
+            lastName: document.getElementById("lastName").value,
+            address: document.getElementById("address").value,
+            email: document.getElementById("email").value,
+            phone: document.getElementById("phone").value,
+            preferredContact: document.getElementById("preferredContact").value
+        })
     });
-
     alert("Instructor updated");
     window.location.href = "people.html";
 });
 
 loadInstructor();
 </script>
-
-</div>
-
 </body>
 </html>

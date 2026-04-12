@@ -50,7 +50,7 @@ exports.createInstructor = async (req, res) => {
       lastName
     });
 
-    const allowDuplicate = req.headers["x-allow-duplicate"];
+    const allowDuplicate = req.headers["x-allow-duplicate"] === "true";
 
     if (existingInstructor && !allowDuplicate) {
       return res.status(400).json({
@@ -58,8 +58,12 @@ exports.createInstructor = async (req, res) => {
       });
     }
 
-    const instructorCount = await Instructor.countDocuments();
-    const newInstructorId = "I" + String(instructorCount + 1).padStart(5, "0");
+    const lastInstructor = await Instructor.findOne({ instructorId: /^I/ })
+      .sort({ instructorId: -1 });
+    const lastNum = lastInstructor
+      ? parseInt(lastInstructor.instructorId.replace("I", ""))
+      : 0;
+    const newInstructorId = "I" + String(lastNum + 1).padStart(5, "0");
 
     const instructor = new Instructor({
       ...req.body,
