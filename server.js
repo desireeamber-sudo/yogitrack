@@ -1,5 +1,4 @@
 // main server file - sets up express, connects to mongodb, registers routes
-//Test auto deploy 1:00 pm
 
 require("dotenv").config();
 const express = require("express");
