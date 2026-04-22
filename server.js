@@ -7,6 +7,7 @@ const cors = require("cors");
 const Customer = require("./models/Customer");
 const customerRoutes = require("./routes/customers");
 const instructorRoutes = require("./routes/instructors");
+const packageRoutes = require("./routes/packages");
 
 const app = express();
 
@@ -14,6 +15,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
+
 
 // connect to mongodb
 mongoose.connect(process.env.MONGO_URI)
@@ -28,6 +30,7 @@ app.get("/", (req, res) => {
 // routes
 app.use("/customers", customerRoutes);
 app.use("/instructors", instructorRoutes);
+app.use("/packages", packageRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
