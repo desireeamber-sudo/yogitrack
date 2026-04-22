@@ -10,7 +10,7 @@ A web-based studio management application for **Yoga H'om**, a yoga studio locat
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | HTML5, CSS3, Vanilla JavaScript |
+| Frontend | HTML5, CSS3, JavaScript |
 | Backend | Node.js, Express.js |
 | Database | MongoDB, Mongoose |
 | Deployment | Heroku |
