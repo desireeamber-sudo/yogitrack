@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<!-- record class attendance page -->
+<html>
+<head>
+    <title>Record Attendance</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* attendance-specific styles */
+        .customer-list { max-height: 300px; overflow-y: auto; border: 0.5px solid #F4C0D1; border-radius: 6px; padding: 8px; margin-bottom: 16px; }
+        .customer-item { display: flex; align-items: center; gap: 10px; padding: 6px 4px; border-bottom: 0.5px solid #FBEAF0; }
+        .customer-item:last-child { border-bottom: none; }
+        .customer-item input[type="checkbox"] { width: auto; margin: 0; }
+        .balance-ok   { color: #085041; font-size: 11px; }
+        .balance-warn { color: #993556; font-size: 11px; font-weight: bold; }
+        .warning-box  { background: #FBEAF0; border: 1px solid #F4C0D1; border-radius: 6px; padding: 10px; margin-bottom: 12px; color: #72243E; font-size: 13px; display: none; }
+        .schedule-warning { background: #FFF8E1; border: 1px solid #FFD54F; border-radius: 6px; padding: 10px; margin-bottom: 12px; color: #5D4037; font-size: 13px; display: none; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Record Class Attendance</h2>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="attendance.html">View Attendance Records</a>
+    </div>
+
+    <form id="attendanceForm">
+
+        <!-- step 1: select class -->
+        <label>Instructor ID:</label><br>
+        <select id="instructorSelect" required>
+            <option value="">Select instructor first</option>
+        </select><br><br>
+
+        <label>Class:</label><br>
+        <select id="classSelect" required>
+            <option value="">Select a class</option>
+        </select><br><br>
+
+        <!-- schedule warning -->
+        <div class="schedule-warning" id="scheduleWarning"></div>
+
+        <!-- step 2: date and time -->
+        <label>Date:</label><br>
+        <input type="date" id="attendanceDate" required><br><br>
+
+        <label>Time:</label><br>
+        <input type="time" id="attendanceTime" required><br><br>
+
+        <!-- step 3: select customers -->
+        <label>Select Customers:</label>
+        <div class="customer-list" id="customerList">
+            <p style="color:#888;font-size:13px;">Select a class first</p>
+        </div>
+
+        <!-- balance warning -->
+        <div class="warning-box" id="balanceWarning"></div>
+
+        <button type="submit">Save Attendance</button>
+    </form>
+</div>
+
+<script>
+let allCustomers = [];
+let selectedClass = null;
+
+// set default date and time to now
+function setDefaultDateTime() {
+    const now = new Date();
+    const dateStr = now.toISOString().split("T")[0];
+    document.getElementById("attendanceDate").value = dateStr;
+    const hours = String(now.getHours()).padStart(2, "0");
+    const mins = String(now.getMinutes()).padStart(2, "0");
+    document.getElementById("attendanceTime").value = `${hours}:${mins}`;
+}
+
+// load instructors into dropdown
+async function loadInstructors() {
+    const result = await fetch("/instructors").then(r => r.json());
+    const select = document.getElementById("instructorSelect");
+    result.data.forEach(i => {
+        const option = document.createElement("option");
+        option.value = i.instructorId;
+        option.text = `${i.instructorId} — ${i.firstName} ${i.lastName}`;
+        select.appendChild(option);
+    });
+}
+
+// load classes for selected instructor
+async function loadClassesForInstructor(instructorId) {
+    const result = await fetch("/classes").then(r => r.json());
+    const classes = result.data.filter(c => c.instructorId === instructorId);
+    const select = document.getElementById("classSelect");
+    select.innerHTML = '<option value="">Select a class</option>';
+    classes.forEach(c => {
+        const option = document.createElement("option");
+        option.value = c.classId;
+        option.text = `${c.classId} — ${c.day} ${c.time} (${c.classType})`;
+        option.dataset.day = c.day;
+        option.dataset.time = c.time;
+        select.appendChild(option);
+    });
+    selectedClass = null;
+    document.getElementById("customerList").innerHTML = '<p style="color:#888;font-size:13px;">Select a class first</p>';
+}
+
+// load all customers into checklist
+async function loadCustomers() {
+    const result = await fetch("/customers").then(r => r.json());
+    allCustomers = result.data;
+    renderCustomerList();
+}
+
+function renderCustomerList() {
+    const container = document.getElementById("customerList");
+    if (allCustomers.length === 0) {
+        container.innerHTML = '<p style="color:#888;font-size:13px;">No customers found</p>';
+        return;
+    }
+    container.innerHTML = allCustomers.map(c => `
+        <div class="customer-item">
+            <input type="checkbox" id="cust_${c.customerId}" value="${c.customerId}">
+            <label for="cust_${c.customerId}" style="font-size:13px;font-weight:normal;color:#2c2c2a;">
+                ${c.firstName} ${c.lastName} (${c.customerId})
+            </label>
+            <span class="${c.classBalance > 0 ? 'balance-ok' : 'balance-warn'}">
+                Balance: ${c.classBalance}
+            </span>
+        </div>
+    `).join("");
+}
+
+// check for schedule conflict warning when date/time changes
+function checkScheduleWarning() {
+    if (!selectedClass) return;
+    const dateVal = document.getElementById("attendanceDate").value;
+    const timeVal = document.getElementById("attendanceTime").value;
+    if (!dateVal || !timeVal) return;
+
+    const dayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    const selectedDay = dayNames[new Date(dateVal + "T12:00:00").getDay()];
+
+    // convert time input to 12hr for comparison
+    const [h, m] = timeVal.split(":");
+    const hour = parseInt(h);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const displayHour = hour % 12 || 12;
+    const formattedTime = `${displayHour}:${m} ${ampm}`;
+
+    const warning = document.getElementById("scheduleWarning");
+    const dayMismatch = selectedDay !== selectedClass.day;
+    const timeMismatch = formattedTime !== selectedClass.time;
+
+    if (dayMismatch || timeMismatch) {
+        warning.style.display = "block";
+        warning.innerHTML = `⚠️ Schedule mismatch — class is scheduled for <strong>${selectedClass.day} at ${selectedClass.time}</strong> but attendance shows <strong>${selectedDay} at ${formattedTime}</strong>. Please confirm this is correct.`;
+    } else {
+        warning.style.display = "none";
+    }
+}
+
+// instructor dropdown change
+document.getElementById("instructorSelect").addEventListener("change", function() {
+    if (this.value) loadClassesForInstructor(this.value);
+});
+
+// class dropdown change
+document.getElementById("classSelect").addEventListener("change", async function() {
+    const classId = this.value;
+    if (!classId) { selectedClass = null; return; }
+    const result = await fetch("/classes").then(r => r.json());
+    selectedClass = result.data.find(c => c.classId === classId);
+    await loadCustomers();
+    checkScheduleWarning();
+});
+
+// date/time change triggers schedule warning check
+document.getElementById("attendanceDate").addEventListener("change", checkScheduleWarning);
+document.getElementById("attendanceTime").addEventListener("change", checkScheduleWarning);
+
+// form submit
+document.getElementById("attendanceForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    // get selected customers
+    const selected = allCustomers
+        .filter(c => document.getElementById(`cust_${c.customerId}`)?.checked)
+        .map(c => c.customerId);
+
+    if (selected.length === 0) {
+        alert("Please select at least one customer.");
+        return;
+    }
+
+    // check for zero/negative balances
+    const warningCustomers = allCustomers.filter(c =>
+        selected.includes(c.customerId) && c.classBalance <= 0
+    );
+
+    if (warningCustomers.length > 0) {
+        const names = warningCustomers.map(c => `${c.firstName} ${c.lastName} (balance: ${c.classBalance})`).join(", ");
+        const proceed = confirm(`⚠️ The following customers have insufficient balance:\n\n${names}\n\nDo you want to continue and save with a negative balance to be resolved later?`);
+        if (!proceed) return;
+    }
+
+    const dateVal = document.getElementById("attendanceDate").value;
+
+    const response = await fetch("/attendance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            classId: selectedClass.classId,
+            date: dateVal,
+            customers: selected
+        })
+    });
+
+    const result = await response.json();
+    if (!response.ok) { alert(result.message); return; }
+
+    // show confirmation message for each customer
+    const date = new Date(dateVal + "T12:00:00");
+    const formattedDate = `${String(date.getDate()).padStart(2,"0")}/${String(date.getMonth()+1).padStart(2,"0")}/${date.getFullYear()}`;
+
+    const confirmations = result.customers.map(c =>
+        `Hello ${c.firstName}! You are checked-in for a class on ${formattedDate} at ${selectedClass.time}. Your class-balance is ${c.classBalance}.`
+    ).join("\n\n");
+
+    alert(`Attendance saved!\n\n${confirmations}`);
+    window.location.href = "attendance.html";
+});
+
+// init
+setDefaultDateTime();
+loadInstructors();
+</script>
+</body>
+</html>

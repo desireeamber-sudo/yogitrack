@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<!-- attendance records list -->
+<html>
+<head>
+    <title>Attendance Records</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+    <h2>Attendance Records</h2>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="record-attendance.html">Record Attendance</a>
+    </div>
+
+    <table id="attendanceTable">
+        <thead>
+            <tr>
+                <th>Attendance ID</th>
+                <th>Class ID</th>
+                <th>Date</th>
+                <th>Customers</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+// load and render attendance records
+async function loadAttendance() {
+    const response = await fetch("/attendance");
+    const result = await response.json();
+    const records = result.data;
+
+    let rows = "";
+    records.forEach(r => {
+        rows += `
+            <tr>
+                <td>${r.attendanceId || "N/A"}</td>
+                <td>${r.classId || ""}</td>
+                <td>${r.date ? new Date(r.date).toLocaleDateString() : ""}</td>
+                <td>${r.customers ? r.customers.join(", ") : ""}</td>
+                <td>
+                    <button class="btn-delete" onclick="deleteRecord('${r._id}')">Delete</button>
+                </td>
+            </tr>`;
+    });
+    document.querySelector("#attendanceTable tbody").innerHTML = rows;
+}
+
+// confirm and delete
+async function deleteRecord(id) {
+    if (!confirm("Are you sure you want to delete this attendance record?")) return;
+    await fetch(`/attendance/${id}`, { method: "DELETE" });
+    loadAttendance();
+}
+
+loadAttendance();
+</script>
+</body>
+</html>
