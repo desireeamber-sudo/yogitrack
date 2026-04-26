@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<!-- class schedule list page -->
+<html>
+<head>
+    <title>Class Schedule</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+    <h2>Class Schedule</h2>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="add-class.html">Add New Class</a>
+    </div>
+
+    <table id="classTable">
+        <thead>
+            <tr>
+                <th>Class ID</th>
+                <th>Instructor ID</th>
+                <th>Day</th>
+                <th>Time</th>
+                <th>Class Type</th>
+                <th>Pay Rate</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+// load and render class schedule
+async function loadClasses() {
+    const response = await fetch("/classes");
+    const result = await response.json();
+    const classes = result.data;
+
+    let rows = "";
+    classes.forEach(c => {
+        rows += `
+            <tr>
+                <td>${c.classId || "N/A"}</td>
+                <td>${c.instructorId || ""}</td>
+                <td>${c.day || ""}</td>
+                <td>${c.time || ""}</td>
+                <td>${c.classType || ""}</td>
+                <td>$${c.payRate ?? ""}/hr</td>
+                <td>
+                    <button class="btn-edit" onclick="editClass('${c._id}')">Edit</button>
+                    <button class="btn-delete" onclick="deleteClass('${c._id}')">Delete</button>
+                </td>
+            </tr>`;
+    });
+    document.querySelector("#classTable tbody").innerHTML = rows;
+}
+
+// confirm and delete
+async function deleteClass(id) {
+    if (!confirm("Are you sure you want to delete this class?")) return;
+    await fetch(`/classes/${id}`, { method: "DELETE" });
+    loadClasses();
+}
+
+// go to edit form
+function editClass(id) {
+    window.location.href = `edit-class.html?id=${id}`;
+}
+
+loadClasses();
+</script>
+</body>
+</html>

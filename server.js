@@ -8,6 +8,7 @@ const Customer = require("./models/Customer");
 const customerRoutes = require("./routes/customers");
 const instructorRoutes = require("./routes/instructors");
 const packageRoutes = require("./routes/packages");
+const classRoutes = require("./routes/classes");
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.get("/", (req, res) => {
 app.use("/customers", customerRoutes);
 app.use("/instructors", instructorRoutes);
 app.use("/packages", packageRoutes);
+app.use("/classes", classRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

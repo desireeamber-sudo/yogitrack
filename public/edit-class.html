@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<!-- edit class form - loads existing data from url id param -->
+<html>
+<head>
+    <title>Edit Class</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+    <h2>Edit Class</h2>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="classes.html">Back to Class Schedule</a>
+    </div>
+
+    <form id="editForm">
+        <label>Instructor ID:</label><br>
+        <select id="instructorId" required>
+            <option value="">Select an instructor</option>
+        </select><br><br>
+
+        <label>Day:</label><br>
+        <select id="day" required>
+            <option value="">Select a day</option>
+            <option value="Sunday">Sunday</option>
+            <option value="Monday">Monday</option>
+            <option value="Tuesday">Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday</option>
+            <option value="Saturday">Saturday</option>
+        </select><br><br>
+
+        <label>Time:</label><br>
+        <input type="time" id="time" required><br><br>
+
+        <label>Class Type:</label><br>
+        <select id="classType" required>
+            <option value="">Select one</option>
+            <option value="General">General</option>
+            <option value="Special">Special</option>
+        </select><br><br>
+
+        <label>Pay Rate ($/hr):</label><br>
+        <input type="number" id="payRate" min="0" step="0.01" required><br><br>
+
+        <button type="submit">Update Class</button>
+    </form>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+// load instructors into dropdown
+async function loadInstructors() {
+    const result = await fetch("/instructors").then(r => r.json());
+    const select = document.getElementById("instructorId");
+    result.data.forEach(i => {
+        const option = document.createElement("option");
+        option.value = i.instructorId;
+        option.text = `${i.instructorId} — ${i.firstName} ${i.lastName}`;
+        select.appendChild(option);
+    });
+}
+
+// load existing class into form
+async function loadClass() {
+    await loadInstructors();
+    const result = await fetch(`/classes/${id}`).then(r => r.json());
+    const c = result.data;
+
+    document.getElementById("instructorId").value = c.instructorId;
+    document.getElementById("day").value = c.day;
+    document.getElementById("classType").value = c.classType;
+    document.getElementById("payRate").value = c.payRate;
+
+    // convert stored time back to HH:MM for time input
+    const timeStr = c.time;
+    const [time, ampm] = timeStr.split(" ");
+    const [h, m] = time.split(":");
+    let hours = parseInt(h);
+    if (ampm === "PM" && hours !== 12) hours += 12;
+    if (ampm === "AM" && hours === 12) hours = 0;
+    document.getElementById("time").value = `${String(hours).padStart(2, "0")}:${m}`;
+}
+
+// save changes
+document.getElementById("editForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const timeVal = document.getElementById("time").value;
+    const [hours, minutes] = timeVal.split(":");
+    const h = parseInt(hours);
+    const ampm = h >= 12 ? "PM" : "AM";
+    const displayHour = h % 12 || 12;
+    const formattedTime = `${displayHour}:${minutes} ${ampm}`;
+
+    const response = await fetch(`/classes/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            instructorId: document.getElementById("instructorId").value,
+            day: document.getElementById("day").value,
+            time: formattedTime,
+            classType: document.getElementById("classType").value,
+            payRate: parseFloat(document.getElementById("payRate").value)
+        })
+    });
+
+    const result = await response.json();
+    if (!response.ok) { alert(result.message); return; }
+
+    alert("Class updated");
+    window.location.href = "classes.html";
+});
+
+loadClass();
+</script>
+</body>
+</html>
