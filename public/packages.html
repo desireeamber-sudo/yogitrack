@@ -65,13 +65,19 @@ async function loadPackages() {
 function renderTable(packages) {
     let rows = "";
     packages.forEach(p => {
+        const classTypeTag = p.classType === "General"
+            ? `<span class="tag tag-customer">General</span>`
+            : `<span class="tag tag-instructor">Special</span>`;
+        const categoryTag = p.category === "General"
+            ? `<span class="tag tag-customer">General</span>`
+            : `<span class="tag tag-instructor">Senior</span>`;
         rows += `
             <tr>
                 <td>${p.packageId || "N/A"}</td>
                 <td>${p.packageName || ""}</td>
-                <td>${p.category || ""}</td>
+                <td>${categoryTag}</td>
                 <td>${p.numberOfClasses || ""}</td>
-                <td>${p.classType || ""}</td>
+                <td>${classTypeTag}</td>
                 <td>${p.startDate ? new Date(p.startDate).toLocaleDateString() : ""}</td>
                 <td>${p.endDate ? new Date(p.endDate).toLocaleDateString() : ""}</td>
                 <td>$${p.price ?? ""}</td>
