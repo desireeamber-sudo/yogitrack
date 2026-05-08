@@ -60,13 +60,16 @@ async function loadClasses() {
 function renderTable(classes) {
     let rows = "";
     classes.forEach(c => {
+        const classTypeTag = c.classType === "General"
+            ? `<span class="tag tag-customer">General</span>`
+            : `<span class="tag tag-instructor">Special</span>`;
         rows += `
             <tr>
                 <td>${c.classId || "N/A"}</td>
                 <td>${c.instructorId || ""}</td>
                 <td>${c.day || ""}</td>
                 <td>${c.time || ""}</td>
-                <td>${c.classType || ""}</td>
+                <td>${classTypeTag}</td>
                 <td>$${c.payRate ?? ""}/hr</td>
                 <td>
                     <button class="btn-edit" onclick="editClass('${c._id}')">Edit</button>
