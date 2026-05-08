@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- home page -->
+<!-- manager dashboard -->
 <html>
 <head>
     <title>YogiTrack - Yoga H'om Studio Management</title>
@@ -20,7 +20,18 @@
         <a href="classes.html" class="btn btn-add-instructor">View Classes</a>
         <a href="record-attendance.html" class="btn btn-add-customer">Record Attendance</a>
         <a href="attendance.html" class="btn btn-add-instructor">View Attendance</a>
+        <a href="manage-users.html" class="btn btn-people">Manage Users</a>
+    </div>
+    <br>
+    <div style="text-align:center;">
+        <button onclick="logout()" class="btn-delete" style="padding:8px 20px;">Log Out</button>
     </div>
 </div>
+<script>
+async function logout() {
+    await fetch("/auth/logout", { method: "POST" });
+    window.location.href = "/login.html";
+}
+</script>
 </body>
 </html>

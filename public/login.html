@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<!-- login page - entry point for all users -->
+<html>
+<head>
+    <title>YogiTrack - Login</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .login-container {
+            max-width: 400px;
+            margin: 80px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            border: 0.5px solid #F4C0D1;
+        }
+        .error-box {
+            background: #FBEAF0;
+            border: 1px solid #F4C0D1;
+            border-radius: 6px;
+            padding: 10px;
+            color: #72243E;
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 10px;
+            background: #ED93B1;
+            color: #4B1528;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .login-btn:hover { background: #D4537E; color: white; }
+        .register-link {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 13px;
+            color: #888;
+        }
+        .register-link a {
+            color: #993556;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body style="background: #fdf6f8;">
+<div class="login-container">
+    <div class="logo-mark" style="margin-bottom: 16px;">🪷</div>
+    <h2 style="margin-bottom: 4px;">YogiTrack</h2>
+    <p class="site-sub" style="margin-bottom: 24px;">Yoga H'om Studio Management</p>
+
+    <div class="error-box" id="errorBox"></div>
+
+    <form id="loginForm">
+        <label>Email:</label><br>
+        <input type="email" id="email" placeholder="email@example.com" required style="width:100%;margin-bottom:16px;"><br>
+
+        <label>Password:</label><br>
+        <input type="password" id="password" placeholder="Password" required style="width:100%;margin-bottom:16px;"><br>
+
+        <button type="submit" class="login-btn">Log In</button>
+    </form>
+
+    <div class="register-link">
+        Manager only: <a href="register.html">Register a new user</a>
+    </div>
+</div>
+
+<script>
+document.getElementById("loginForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const errorBox = document.getElementById("errorBox");
+
+    const response = await fetch("/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        errorBox.style.display = "block";
+        errorBox.textContent = result.message;
+        return;
+    }
+
+    // redirect based on role
+    if (result.role === "Manager") {
+        window.location.href = "/index.html";
+    } else {
+        window.location.href = "/instructor.html";
+    }
+});
+</script>
+</body>
+</html>

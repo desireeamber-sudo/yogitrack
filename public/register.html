@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<!-- register new user - manager only -->
+<html>
+<head>
+    <title>Register User</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .error { border-color: #993556 !important; }
+        .formErrors { background: #FBEAF0; border: 1px solid #F4C0D1; border-radius: 6px; padding: 10px; color: #72243E; font-size: 13px; margin-bottom: 16px; }
+        .hide { display: none; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Register New User</h2>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="manage-users.html">Back to User Management</a>
+    </div>
+
+    <div id="formErrors" class="formErrors hide"></div>
+
+    <form id="registerForm">
+        <label>Full Name:</label><br>
+        <input type="text" id="fullName" required><br><br>
+
+        <label>Email:</label><br>
+        <input type="email" id="email" required><br><br>
+
+        <label>Password:</label><br>
+        <input type="password" id="password" placeholder="10-20 chars, upper, lower, digit" required><br><br>
+
+        <label>Confirm Password:</label><br>
+        <input type="password" id="passwordConfirm" required><br><br>
+
+        <label>Role:</label><br>
+        <select id="role" required>
+            <option value="">Select role</option>
+            <option value="Manager">Manager</option>
+            <option value="Instructor">Instructor</option>
+        </select><br><br>
+
+        <button type="submit" id="submit">Register User</button>
+    </form>
+</div>
+
+<script>
+// validation from course lab - adapted for YogiTrack
+function checkForm() {
+    const fullName = document.querySelector("#fullName");
+    const email = document.querySelector("#email");
+    const password = document.querySelector("#password");
+    const passwordConfirm = document.querySelector("#passwordConfirm");
+    const formErrors = document.querySelector("#formErrors");
+
+    let errors = [];
+
+    fullName.classList.remove("error");
+    email.classList.remove("error");
+    password.classList.remove("error");
+    passwordConfirm.classList.remove("error");
+
+    if (fullName.value.length < 1) {
+        errors.push("Missing full name.");
+        fullName.classList.add("error");
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,5}$/;
+    if (!emailRegex.test(email.value)) {
+        errors.push("Invalid or missing email address.");
+        email.classList.add("error");
+    }
+
+    if (password.value.length < 10 || password.value.length > 20) {
+        errors.push("Password must be between 10 and 20 characters.");
+        password.classList.add("error");
+    }
+
+    if (!/[a-z]/.test(password.value)) {
+        errors.push("Password must contain at least one lowercase character.");
+        password.classList.add("error");
+    }
+
+    if (!/[A-Z]/.test(password.value)) {
+        errors.push("Password must contain at least one uppercase character.");
+        password.classList.add("error");
+    }
+
+    if (!/[0-9]/.test(password.value)) {
+        errors.push("Password must contain at least one digit.");
+        password.classList.add("error");
+    }
+
+    if (password.value !== passwordConfirm.value) {
+        errors.push("Password and confirmation password don't match.");
+        passwordConfirm.classList.add("error");
+    }
+
+    if (errors.length > 0) {
+        formErrors.classList.remove("hide");
+        let html = "<ul>";
+        for (let error of errors) { html += `<li>${error}</li>`; }
+        html += "</ul>";
+        formErrors.innerHTML = html;
+        return false;
+    } else {
+        formErrors.classList.add("hide");
+        formErrors.innerHTML = "";
+        return true;
+    }
+}
+
+document.querySelector("#submit").addEventListener("click", async function(event) {
+    event.preventDefault();
+    if (!checkForm()) return;
+
+    const response = await fetch("/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            fullName: document.getElementById("fullName").value,
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value,
+            role: document.getElementById("role").value
+        })
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+        const formErrors = document.getElementById("formErrors");
+        formErrors.classList.remove("hide");
+        formErrors.innerHTML = `<ul><li>${result.message}</li></ul>`;
+        return;
+    }
+
+    alert(`User registered successfully!\n${result.data.fullName} (${result.data.role})`);
+    window.location.href = "manage-users.html";
+});
+</script>
+</body>
+</html>
