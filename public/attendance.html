@@ -16,10 +16,10 @@
     <table id="attendanceTable">
         <thead>
             <tr>
-                <th>Attendance ID</th>
-                <th>Class ID</th>
-                <th>Date</th>
-                <th>Customers</th>
+                <th>Attendance ID<br><input class="col-filter" id="filterId" placeholder="Filter..."></th>
+                <th>Class ID<br><input class="col-filter" id="filterClass" placeholder="Filter..."></th>
+                <th>Date<br><input class="col-filter" id="filterDate" placeholder="Filter..."></th>
+                <th>Customers<br><input class="col-filter" id="filterCustomers" placeholder="Filter..."></th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -28,12 +28,16 @@
 </div>
 
 <script>
-// load and render attendance records
+let allAttendance = [];
+
 async function loadAttendance() {
     const response = await fetch("/attendance");
     const result = await response.json();
-    const records = result.data;
+    allAttendance = result.data;
+    renderTable(allAttendance);
+}
 
+function renderTable(records) {
     let rows = "";
     records.forEach(r => {
         rows += `
@@ -50,7 +54,24 @@ async function loadAttendance() {
     document.querySelector("#attendanceTable tbody").innerHTML = rows;
 }
 
-// confirm and delete
+function applyFilters() {
+    const id        = document.getElementById("filterId").value.toLowerCase();
+    const classId   = document.getElementById("filterClass").value.toLowerCase();
+    const date      = document.getElementById("filterDate").value.toLowerCase();
+    const customers = document.getElementById("filterCustomers").value.toLowerCase();
+
+    const filtered = allAttendance.filter(r =>
+        (!id        || (r.attendanceId || "").toLowerCase().includes(id)) &&
+        (!classId   || (r.classId || "").toLowerCase().includes(classId)) &&
+        (!date      || new Date(r.date).toLocaleDateString().toLowerCase().includes(date)) &&
+        (!customers || (r.customers || []).join(", ").toLowerCase().includes(customers))
+    );
+    renderTable(filtered);
+}
+
+["filterId","filterClass","filterDate","filterCustomers"]
+    .forEach(id => document.getElementById(id).addEventListener("input", applyFilters));
+
 async function deleteRecord(id) {
     if (!confirm("Are you sure you want to delete this attendance record?")) return;
     await fetch(`/attendance/${id}`, { method: "DELETE" });

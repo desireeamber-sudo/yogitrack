@@ -16,12 +16,29 @@
     <table id="classTable">
         <thead>
             <tr>
-                <th>Class ID</th>
-                <th>Instructor ID</th>
-                <th>Day</th>
-                <th>Time</th>
-                <th>Class Type</th>
-                <th>Pay Rate</th>
+                <th>Class ID<br><input class="col-filter" id="filterId" placeholder="Filter..."></th>
+                <th>Instructor ID<br><input class="col-filter" id="filterInstructor" placeholder="Filter..."></th>
+                <th>Day<br>
+                    <select class="col-filter" id="filterDay">
+                        <option value="">All</option>
+                        <option value="Sunday">Sunday</option>
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                    </select>
+                </th>
+                <th>Time<br><input class="col-filter" id="filterTime" placeholder="Filter..."></th>
+                <th>Class Type<br>
+                    <select class="col-filter" id="filterClassType">
+                        <option value="">All</option>
+                        <option value="General">General</option>
+                        <option value="Special">Special</option>
+                    </select>
+                </th>
+                <th>Pay Rate<br><input class="col-filter" id="filterPayRate" placeholder="Filter..."></th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -29,13 +46,18 @@
     </table>
 </div>
 
+<script src="checkManagerRole.js"></script>
 <script>
-// load and render class schedule
+let allClasses = [];
+
 async function loadClasses() {
     const response = await fetch("/classes");
     const result = await response.json();
-    const classes = result.data;
+    allClasses = result.data;
+    renderTable(allClasses);
+}
 
+function renderTable(classes) {
     let rows = "";
     classes.forEach(c => {
         rows += `
@@ -55,14 +77,36 @@ async function loadClasses() {
     document.querySelector("#classTable tbody").innerHTML = rows;
 }
 
-// confirm and delete
+function applyFilters() {
+    const id         = document.getElementById("filterId").value.toLowerCase();
+    const instructor = document.getElementById("filterInstructor").value.toLowerCase();
+    const day        = document.getElementById("filterDay").value;
+    const time       = document.getElementById("filterTime").value.toLowerCase();
+    const classType  = document.getElementById("filterClassType").value;
+    const payRate    = document.getElementById("filterPayRate").value.toLowerCase();
+
+    const filtered = allClasses.filter(c =>
+        (!id         || (c.classId || "").toLowerCase().includes(id)) &&
+        (!instructor || (c.instructorId || "").toLowerCase().includes(instructor)) &&
+        (!day        || c.day === day) &&
+        (!time       || (c.time || "").toLowerCase().includes(time)) &&
+        (!classType  || c.classType === classType) &&
+        (!payRate    || String(c.payRate).includes(payRate))
+    );
+    renderTable(filtered);
+}
+
+["filterId","filterInstructor","filterTime","filterPayRate"]
+    .forEach(id => document.getElementById(id).addEventListener("input", applyFilters));
+["filterDay","filterClassType"]
+    .forEach(id => document.getElementById(id).addEventListener("change", applyFilters));
+
 async function deleteClass(id) {
     if (!confirm("Are you sure you want to delete this class?")) return;
     await fetch(`/classes/${id}`, { method: "DELETE" });
     loadClasses();
 }
 
-// go to edit form
 function editClass(id) {
     window.location.href = `edit-class.html?id=${id}`;
 }
