@@ -2,7 +2,7 @@
 
 A web-based studio management application for **Yoga H'om**, a yoga studio located in the suburbs of Pittsburgh, PA. YogiTrack automates the core business processes of the studio, replacing a manual paper-based record-keeping system with a modern full-stack web application.
 
-**Live Application:** https://yogitrack-des-9bc253af7715.herokuapp.com/
+**Live Application:** https://yogitrack-des-9bc253af7715.herokuapp.com/  
 **GitHub Repository:** https://github.com/desireeamber-sudo/yogitrack
 
 ---
