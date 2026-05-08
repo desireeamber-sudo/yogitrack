@@ -1,59 +1,44 @@
 <!DOCTYPE html>
-<!-- user management page - manager only -->
+<!-- instructor dashboard - instructor role only -->
 <html>
 <head>
-    <title>Manage Users</title>
+    <title>YogiTrack - Instructor Dashboard</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div class="container">
-    <h2>Manage Users</h2>
-    <div class="nav-links">
-        <a href="index.html">Home</a>
-        <a href="register.html">Register New User</a>
+    <div class="logo-mark">🪷</div>
+    <h1>YogiTrack</h1>
+    <p class="site-sub">Yoga H'om Studio Management</p>
+    <div class="button-group">
+        <a href="record-attendance.html" class="btn btn-add-customer">Record Attendance</a>
+        <a href="attendance.html" class="btn btn-add-instructor">View Attendance</a>
+        <a href="classes.html" class="btn btn-people">View Class Schedule</a>
     </div>
-
-    <table id="userTable">
-        <thead>
-            <tr>
-                <th>Full Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+    <br>
+    <div style="text-align:center;">
+        <button onclick="logout()" class="btn-delete" style="padding:8px 20px;">Log Out</button>
+    </div>
 </div>
-
 <script>
-async function loadUsers() {
-    const response = await fetch("/auth/users");
-    const result = await response.json();
-    const users = result.data;
-
-    let rows = "";
-    users.forEach(u => {
-        rows += `
-            <tr>
-                <td>${u.fullName}</td>
-                <td>${u.email}</td>
-                <td>${u.role}</td>
-                <td>
-                    <button class="btn-delete" onclick="deleteUser('${u._id}')">Delete</button>
-                </td>
-            </tr>`;
-    });
-    document.querySelector("#userTable tbody").innerHTML = rows;
+// check that this is actually an instructor
+async function checkInstructorRole() {
+    const result = await fetch("/auth/me").then(r => r.json()).catch(() => null);
+    if (!result || !result.role) {
+        window.location.href = "/login.html";
+        return;
+    }
+    if (result.role === "Manager") {
+        window.location.href = "/index.html";
+    }
 }
 
-async function deleteUser(id) {
-    if (!confirm("Are you sure you want to delete this user?")) return;
-    await fetch(`/auth/users/${id}`, { method: "DELETE" });
-    loadUsers();
+async function logout() {
+    await fetch("/auth/logout", { method: "POST" });
+    window.location.href = "/login.html";
 }
 
-loadUsers();
+checkInstructorRole();
 </script>
 </body>
 </html>

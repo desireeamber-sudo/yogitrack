@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- manager dashboard -->
+<!-- manager dashboard - manager role only -->
 <html>
 <head>
     <title>YogiTrack - Yoga H'om Studio Management</title>
@@ -27,6 +27,7 @@
         <button onclick="logout()" class="btn-delete" style="padding:8px 20px;">Log Out</button>
     </div>
 </div>
+<script src="checkManagerRole.js"></script>
 <script>
 async function logout() {
     await fetch("/auth/logout", { method: "POST" });
