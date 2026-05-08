@@ -26,6 +26,7 @@
     </table>
 </div>
 
+<script src="checkManagerRole.js"></script>
 <script>
 async function loadUsers() {
     const response = await fetch("/auth/users");
@@ -40,11 +41,16 @@ async function loadUsers() {
                 <td>${u.email}</td>
                 <td>${u.role}</td>
                 <td>
+                    <button class="btn-edit" onclick="editUser('${u._id}')">Edit</button>
                     <button class="btn-delete" onclick="deleteUser('${u._id}')">Delete</button>
                 </td>
             </tr>`;
     });
     document.querySelector("#userTable tbody").innerHTML = rows;
+}
+
+function editUser(id) {
+    window.location.href = `edit-user.html?id=${id}`;
 }
 
 async function deleteUser(id) {
@@ -55,6 +61,5 @@ async function deleteUser(id) {
 
 loadUsers();
 </script>
-<script src="checkManagerRole.js"></script>
 </body>
 </html>

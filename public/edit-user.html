@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<!-- edit user form - manager only -->
+<html>
+<head>
+    <title>Edit User</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+    <h2>Edit User</h2>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="manage-users.html">Back to User Management</a>
+    </div>
+
+    <form id="editForm">
+        <label>Full Name:</label><br>
+        <input type="text" id="fullName" required><br><br>
+
+        <label>Email:</label><br>
+        <input type="email" id="email" required><br><br>
+
+        <label>Role:</label><br>
+        <select id="role" required>
+            <option value="">Select role</option>
+            <option value="Manager">Manager</option>
+            <option value="Instructor">Instructor</option>
+        </select><br><br>
+
+        <label>New Password: <span style="font-size:12px;color:#888;">(leave blank to keep current)</span></label><br>
+        <input type="password" id="password" placeholder="Leave blank to keep current"><br><br>
+
+        <button type="submit">Update User</button>
+    </form>
+</div>
+
+<script src="checkManagerRole.js"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+// load existing user into form
+async function loadUser() {
+    const result = await fetch("/auth/users").then(r => r.json());
+    const user = result.data.find(u => u._id === id);
+    if (!user) { alert("User not found"); window.location.href = "manage-users.html"; return; }
+    document.getElementById("fullName").value = user.fullName;
+    document.getElementById("email").value = user.email;
+    document.getElementById("role").value = user.role;
+}
+
+// save changes
+document.getElementById("editForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const body = {
+        fullName: document.getElementById("fullName").value,
+        email: document.getElementById("email").value,
+        role: document.getElementById("role").value,
+    };
+
+    const newPassword = document.getElementById("password").value;
+    if (newPassword) body.password = newPassword;
+
+    const response = await fetch(`/auth/users/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+    });
+
+    const result = await response.json();
+    if (!response.ok) { alert(result.message); return; }
+
+    alert("User updated successfully!");
+    window.location.href = "manage-users.html";
+});
+
+loadUser();
+</script>
+</body>
+</html>
