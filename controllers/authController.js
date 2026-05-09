@@ -17,6 +17,7 @@ exports.postLogin = async (req, res) => {
     if (!user) return res.status(401).json({ message: "Invalid email or password" });
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: "Invalid email or password" });
+    // set session data on successful login
     req.session.userId = user._id;
     req.session.role = user.role;
     req.session.fullName = user.fullName;
@@ -42,6 +43,7 @@ exports.register = async (req, res) => {
     if (existing) {
       return res.status(400).json({ message: "An account with that email already exists" });
     }
+    // hash password before storing
     const hashed = await bcrypt.hash(password, 10);
     const user = new User({ fullName, email, password: hashed, role });
     await user.save();
